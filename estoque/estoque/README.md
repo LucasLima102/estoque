@@ -87,3 +87,9 @@ Se os registros aparecerem, a carga inicial foi executada corretamente.
 ## Observacao
 
 O banco H2 usado no projeto esta em memoria. Isso significa que os dados sao recriados sempre que a aplicacao e iniciada novamente.
+
+## DER
+
+![DER da aplicação][def]
+
+[def]: DER.png
