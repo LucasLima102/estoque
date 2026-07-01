@@ -1,20 +1,40 @@
 # Sistema de Estoque
 
-O sistema gerencia o estoque e as vendas de uma loja de eletrodomesticos, controlando fornecedores, produtos, clientes, funcionarios, pedidos, itens de pedido, entregas, promocoes e tags de produtos.
+API REST em Spring Boot para gerenciar o estoque e as vendas de uma loja de eletrodomesticos. O sistema controla fornecedores, produtos, clientes, funcionarios, pedidos, itens de pedido, entregas, promocoes e tags de produtos.
 
-## Como testar a aplicacao
+## Proposta
 
-### 1. Verificar o Java
+O dominio escolhido representa uma loja que precisa manter seu catalogo de produtos, registrar fornecedores, cadastrar clientes e criar pedidos de venda. A solucao expoe endpoints REST com camadas separadas de controller, service e repository, usando JPA com banco H2 em memoria.
 
-Antes de iniciar, confira se o Java esta instalado e se o `JAVA_HOME` esta configurado corretamente:
+Principais recursos:
+
+- CRUD de clientes, fornecedores e produtos.
+- Criacao, consulta, alteracao de status e exclusao de pedidos.
+- Validacao de entrada com Bean Validation.
+- Autenticacao com Spring Security e JWT.
+- Documentacao dos endpoints com Swagger/OpenAPI.
+- Carga inicial de dados para facilitar testes locais.
+
+## Tecnologias
+
+- Java 21
+- Spring Boot
+- Spring Web MVC
+- Spring Data JPA
+- Spring Security
+- JWT
+- Bean Validation
+- H2 Database
+- Swagger/OpenAPI
+- Maven
+
+## Como executar localmente
+
+Verifique o Java:
 
 ```bash
 java -version
 ```
-
-O projeto esta configurado para Java 21.
-
-### 2. Iniciar a aplicacao
 
 Na pasta raiz do projeto, execute:
 
@@ -22,27 +42,33 @@ Na pasta raiz do projeto, execute:
 ./mvnw spring-boot:run
 ```
 
-No Windows, use:
+No Windows:
 
 ```bash
 mvnw.cmd spring-boot:run
 ```
 
-Por padrao, a aplicacao sera iniciada em:
+A aplicacao sobe em:
 
 ```text
-http://localhost:8080
+http://localhost:8085
 ```
 
-### 3. Acessar o H2 Console
+## Acessos uteis
 
-Com a aplicacao rodando, abra no navegador:
+Swagger/OpenAPI:
 
 ```text
-http://localhost:8080/h2-console
+http://localhost:8085/swagger-ui/index.html
 ```
 
-Use os seguintes dados de conexao:
+H2 Console:
+
+```text
+http://localhost:8085/h2-console
+```
+
+Dados de conexao do H2:
 
 ```text
 JDBC URL: jdbc:h2:mem:estoque
@@ -50,46 +76,176 @@ User Name: sa
 Password: sa
 ```
 
-O campo `Password` deve ficar vazio.
+## Autenticacao
 
-### 4. Conferir as tabelas
+Antes de acessar os endpoints protegidos, gere um token:
 
-Depois de conectar no H2 Console, as tabelas devem aparecer no painel lateral. Exemplos:
+```http
+POST /api/auth/login
+Content-Type: application/json
+
+{
+  "usuario": "calmeida",
+  "senha": "123456"
+}
+```
+
+Exemplo de resposta:
+
+```json
+{
+  "tipo": "Bearer",
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+Use o token nas proximas requisicoes:
 
 ```text
-CLIENTES
-FORNECEDORES
-PRODUTOS
-PEDIDOS
-ITENS_PEDIDO
-ENTREGAS
-PROMOCOES
-TAGS_PRODUTO
-PRODUTOS_PROMOCOES
-PRODUTOS_TAGS
+Authorization: Bearer SEU_TOKEN
 ```
 
-### 5. Consultar os dados iniciais
+## Exemplos de execucao
 
-A aplicacao possui uma carga inicial executada automaticamente ao iniciar. Para testar, rode consultas como:
+Criar fornecedor:
 
-```sql
-SELECT * FROM CLIENTES;
-SELECT * FROM PRODUTOS;
-SELECT * FROM PEDIDOS;
-SELECT * FROM ENTREGAS;
-SELECT * FROM PROMOCOES;
-SELECT * FROM TAGS_PRODUTO;
+```http
+POST /api/fornecedores
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+
+{
+  "nome": "Tech Distribuidora",
+  "email": "contato@techdistribuidora.com",
+  "cnpj": "11222333000144",
+  "telefone": "1133334444"
+}
 ```
 
-Se os registros aparecerem, a carga inicial foi executada corretamente.
+Resposta:
 
-## Observacao
+```json
+{
+  "id": 2,
+  "nome": "Tech Distribuidora",
+  "email": "contato@techdistribuidora.com",
+  "cnpj": "11222333000144",
+  "telefone": "1133334444"
+}
+```
 
-O banco H2 usado no projeto esta em memoria. Isso significa que os dados sao recriados sempre que a aplicacao e iniciada novamente.
+Criar produto:
 
-## DER
+```http
+POST /api/produtos
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
 
-![DER da aplicação][def]
+{
+  "nome": "Micro-ondas 32L",
+  "marca": "Electrolux",
+  "categoria": "Cozinha",
+  "voltagem": "110V",
+  "precoBase": 799.90,
+  "fornecedorId": 1,
+  "promocaoIds": [],
+  "tagIds": []
+}
+```
 
-[def]: DER.png
+Criar pedido:
+
+```http
+POST /api/pedidos
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+
+{
+  "clienteId": 1,
+  "funcionarioId": 1,
+  "itens": [
+    {
+      "produtoId": 1,
+      "quantidade": 2
+    }
+  ]
+}
+```
+
+Resposta:
+
+```json
+{
+  "id": 2,
+  "statusPedido": "CRIADO",
+  "clienteId": 1,
+  "cliente": "Mariana Silva",
+  "funcionarioId": 1,
+  "funcionario": "Carlos Almeida",
+  "itens": [
+    {
+      "produtoId": 1,
+      "produto": "Geladeira Frost Free 400L",
+      "quantidade": 2,
+      "precoVenda": 3499.90,
+      "subtotal": 6999.80
+    }
+  ],
+  "total": 6999.80
+}
+```
+
+## Endpoints principais
+
+- `POST /api/auth/login`
+- `GET /api/clientes`
+- `POST /api/clientes`
+- `PUT /api/clientes/{id}`
+- `DELETE /api/clientes/{id}`
+- `GET /api/fornecedores`
+- `POST /api/fornecedores`
+- `PUT /api/fornecedores/{id}`
+- `DELETE /api/fornecedores/{id}`
+- `GET /api/produtos`
+- `POST /api/produtos`
+- `PUT /api/produtos/{id}`
+- `DELETE /api/produtos/{id}`
+- `GET /api/pedidos`
+- `POST /api/pedidos`
+- `PUT /api/pedidos/{id}`
+- `PATCH /api/pedidos/{id}/status`
+- `DELETE /api/pedidos/{id}`
+- `GET /api/enderecos`
+- `POST /api/enderecos`
+- `PUT /api/enderecos/{id}`
+- `DELETE /api/enderecos/{id}`
+- `GET /api/funcionarios`
+- `POST /api/funcionarios`
+- `PUT /api/funcionarios/{id}`
+- `DELETE /api/funcionarios/{id}`
+- `GET /api/logins-funcionarios`
+- `POST /api/logins-funcionarios`
+- `PUT /api/logins-funcionarios/{id}`
+- `DELETE /api/logins-funcionarios/{id}`
+- `GET /api/itens-pedido`
+- `POST /api/itens-pedido`
+- `PUT /api/itens-pedido/{id}`
+- `DELETE /api/itens-pedido/{id}`
+- `GET /api/entregas`
+- `POST /api/entregas`
+- `PUT /api/entregas/{id}`
+- `DELETE /api/entregas/{id}`
+- `GET /api/promocoes`
+- `POST /api/promocoes`
+- `PUT /api/promocoes/{id}`
+- `DELETE /api/promocoes/{id}`
+- `GET /api/tags-produto`
+- `POST /api/tags-produto`
+- `PUT /api/tags-produto/{id}`
+- `DELETE /api/tags-produto/{id}`
+
+## Modelo de dados
+
+O DER do projeto esta no arquivo abaixo:
+
+![DER da aplicacao](DER.png)

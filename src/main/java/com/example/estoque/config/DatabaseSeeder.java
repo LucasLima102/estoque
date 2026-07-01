@@ -28,6 +28,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class DatabaseSeeder implements CommandLineRunner {
@@ -43,6 +44,7 @@ public class DatabaseSeeder implements CommandLineRunner {
     private final PedidoRepository pedidoRepository;
     private final ItemPedidoRepository itemPedidoRepository;
     private final EntregaRepository entregaRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public DatabaseSeeder(
             FornecedorRepository fornecedorRepository,
@@ -55,7 +57,8 @@ public class DatabaseSeeder implements CommandLineRunner {
             LoginFuncionarioRepository loginFuncionarioRepository,
             PedidoRepository pedidoRepository,
             ItemPedidoRepository itemPedidoRepository,
-            EntregaRepository entregaRepository
+            EntregaRepository entregaRepository,
+            PasswordEncoder passwordEncoder
     ) {
         this.fornecedorRepository = fornecedorRepository;
         this.produtoRepository = produtoRepository;
@@ -68,6 +71,7 @@ public class DatabaseSeeder implements CommandLineRunner {
         this.pedidoRepository = pedidoRepository;
         this.itemPedidoRepository = itemPedidoRepository;
         this.entregaRepository = entregaRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -136,7 +140,7 @@ public class DatabaseSeeder implements CommandLineRunner {
 
         LoginFuncionario loginFuncionario = new LoginFuncionario();
         loginFuncionario.setUsuario("calmeida");
-        loginFuncionario.setSenha("123456");
+        loginFuncionario.setSenha(passwordEncoder.encode("123456"));
         loginFuncionario.setUltimoLogin(LocalDateTime.now());
         loginFuncionario.setFuncionario(funcionario);
         loginFuncionarioRepository.save(loginFuncionario);
